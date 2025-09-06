@@ -358,6 +358,9 @@ class TelegramBot:
             context.user_data.pop("selected_exch", None)
             context.user_data.pop("selected_token", None)
             
+            # Return to READY state for new trades
+            return self.config.READY
+            
         elif order_type == "🎯 Limit Order":
             # Ask for limit price
             await update.message.reply_text(
@@ -372,6 +375,8 @@ class TelegramBot:
             context.user_data.pop("selected_symbol", None)
             context.user_data.pop("selected_exch", None)
             context.user_data.pop("selected_token", None)
+            # Return to READY state for new trades
+            return self.config.READY
         else:
             await update.message.reply_text("❌ Invalid selection. Please choose Market Order or Limit Order.")
             return self.config.ORDER_TYPE_SELECTION
@@ -406,6 +411,9 @@ class TelegramBot:
             context.user_data.pop("selected_symbol", None)
             context.user_data.pop("selected_exch", None)
             context.user_data.pop("selected_token", None)
+            
+            # Return to READY state for new trades
+            return self.config.READY
             
         except ValueError:
             await update.message.reply_text("❌ Invalid price. Please enter a valid number (e.g., 1500.50)")
