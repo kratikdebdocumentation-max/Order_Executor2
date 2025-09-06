@@ -82,7 +82,6 @@ class APIClient:
                 discloseqty=discloseqty,
                 price_type=price_type,
                 price=price,
-                trigger_price=trigger_price,
                 retention=retention,
                 remarks=remarks
             )

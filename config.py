@@ -17,7 +17,7 @@ class Config:
         self.load_credentials()
         
         # Trading configuration
-        self.DEFAULT_PRODUCT_TYPE = "MIS"  # Default to MIS as per user preference
+        self.DEFAULT_PRODUCT_TYPE = "I"  # Default to Intraday (I) to match working code
         self.LOG_FILE = "trade_log.csv"
         
         # Conversation state constants (must be strings for ConversationHandler)
@@ -92,7 +92,7 @@ class Config:
             self.TELEGRAM_CHAT_ID = creds.get("telegram_chat_id")
             
             # Load trading configuration
-            self.DEFAULT_PRODUCT_TYPE = creds.get("default_product_type", "MIS")
+            self.DEFAULT_PRODUCT_TYPE = creds.get("default_product_type", "I")
             
             # Validate required fields
             required_fields = ["username", "pwd", "factor2", "vc", "app_key", "imei"]

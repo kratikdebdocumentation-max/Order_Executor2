@@ -58,7 +58,7 @@ class TradingEngine:
             # Place the order
             order_resp = self.api_client.place_order(
                 buy_or_sell="B",
-                product_type=self.config.DEFAULT_PRODUCT_TYPE,  # Use configurable product type
+                product_type="I",  # Use "I" for Intraday like working code
                 exchange=exchange,
                 tradingsymbol=symbol,
                 quantity=quantity,
@@ -138,7 +138,7 @@ class TradingEngine:
             # Place exit order
             exit_order_resp = self.api_client.place_order(
                 buy_or_sell="S",
-                product_type=self.config.DEFAULT_PRODUCT_TYPE,  # Use configurable product type
+                product_type="I",  # Use "I" for Intraday like working code
                 exchange=trade["exch"],
                 tradingsymbol=trade["symbol"],
                 quantity=trade["qty"],
@@ -147,8 +147,7 @@ class TradingEngine:
                 price=0.0,
                 trigger_price=None,  # Added trigger_price parameter
                 retention="DAY",
-                remarks=f"Exit-{reason}",
-                amo="NO",
+                remarks=f"Exit-{reason}"
             )
 
             if not exit_order_resp or exit_order_resp.get("stat") != "Ok":
