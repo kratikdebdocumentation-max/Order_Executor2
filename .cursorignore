@@ -1,0 +1,4 @@
+# Allow credentials.json to be visible in Cursor
+# Remove any patterns that might be ignoring it
+
+
