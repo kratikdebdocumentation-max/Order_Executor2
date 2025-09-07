@@ -32,6 +32,31 @@ class Config:
         self.MODIFY_SL = "MODIFY_SL"
         self.MODIFY_TARGET = "MODIFY_TARGET"
         
+        # Order status constants
+        self.ORDER_PENDING = "PENDING"
+        self.ORDER_CANCELED = "CANCELED"
+        self.ORDER_OPEN = "OPEN"
+        self.ORDER_REJECTED = "REJECTED"
+        self.ORDER_COMPLETE = "COMPLETE"
+        self.ORDER_TRIGGER_PENDING = "TRIGGER_PENDING"
+        self.ORDER_INVALID_STATUS = "INVALID_STATUS_TYPE"
+        
+        # Order report type constants
+        self.REPORT_NEW_ACK = "NewAck"
+        self.REPORT_MOD_ACK = "ModAck"
+        self.REPORT_CAN_ACK = "CanAck"
+        self.REPORT_PENDING_NEW = "PendingNew"
+        self.REPORT_PENDING_REPLACE = "PendingReplace"
+        self.REPORT_PENDING_CANCEL = "PendingCancel"
+        self.REPORT_NEW = "New"
+        self.REPORT_REPLACED = "Replaced"
+        self.REPORT_CANCELED = "Canceled"
+        self.REPORT_FILL = "Fill"
+        self.REPORT_REJECTED = "Rejected"
+        self.REPORT_REPLACE_REJECTED = "ReplaceRejected"
+        self.REPORT_CANCEL_REJECTED = "CancelRejected"
+        self.REPORT_INVALID_TYPE = "INVALID_REPORT_TYPE"
+        
         # Feature flags (boolean)
         self.DEBUG = False  # Debug mode
         self.VERBOSE = False  # Verbose logging

@@ -379,17 +379,15 @@ class TelegramBot:
             
             # Get current quote
             quote = self.api_client.get_quote(exch, token)
-            current_ltp = "N/A"
             
-            if quote and "lp" in quote:
-                current_ltp = f"₹{quote['lp']}"
-            else:
-                # Try to get quote again with a small delay
-                import asyncio
-                await asyncio.sleep(0.5)
-                quote = self.api_client.get_quote(exch, token)
-                if quote and "lp" in quote:
-                    current_ltp = f"₹{quote['lp']}"
+            if not quote or "lp" not in quote:
+                await update.message.reply_text(
+                    f"❌ Unable to fetch current LTP for {symbol}.\n"
+                    f"Please try again or use Market Order instead."
+                )
+                return
+            
+            current_ltp = f"₹{quote['lp']}"
             
             # Ask for limit price with current LTP
             await update.message.reply_text(

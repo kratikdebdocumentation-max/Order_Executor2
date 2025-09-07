@@ -74,7 +74,7 @@ class TradingEngine:
                 order_id = order_resp.get("norenordno")
                 entry_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                # Store trade information
+                # Store trade information with pending status
                 self.active_trades[order_id] = {
                     "symbol": symbol,
                     "sl": sl_price,
@@ -84,30 +84,50 @@ class TradingEngine:
                     "qty": quantity,
                     "entry_price": last_price,
                     "entry_time": entry_time,
-                    "context": context
+                    "context": context,
+                    "order_status": "PENDING",
+                    "order_type": order_type,
+                    "limit_price": limit_price if order_type == "LMT" else None
                 }
 
-                # Log the trade entry
-                row_index = self.trade_logger.log_trade_entry(symbol, last_price, entry_time)
-                if row_index is not None:
-                    self.active_trades[order_id]["log_row"] = row_index
-
-                # Calculate PnL information
-                pnl_info = format_pnl_message(entry_price, sl_price, tgt_price, quantity)
+                # For market orders, assume immediate fill
+                if order_type == "MKT":
+                    # Log the trade entry immediately for market orders
+                    row_index = self.trade_logger.log_trade_entry(symbol, last_price, entry_time)
+                    if row_index is not None:
+                        self.active_trades[order_id]["log_row"] = row_index
+                    
+                    # Calculate PnL information
+                    pnl_info = format_pnl_message(entry_price, sl_price, tgt_price, quantity)
+                    
+                    confirmation_msg = (
+                        f"✅ Order Filled Successfully!\n\n"
+                        f"📌 Symbol: {symbol}\n"
+                        f"📋 Type: Market Order\n"
+                        f"💰 Entry: {entry_price}\n"
+                        f"📦 Qty: {quantity}\n"
+                        f"📉 SL: {sl_price}\n"
+                        f"🎯 Target: {tgt_price}\n"
+                        f"🆔 Order No: {order_id}\n\n"
+                        f"{pnl_info}"
+                    )
+                else:
+                    # For limit orders, show placed status
+                    order_type_display = f"Limit Order @ ₹{limit_price}"
+                    
+                    confirmation_msg = (
+                        f"📋 Order Placed Successfully!\n\n"
+                        f"📌 Symbol: {symbol}\n"
+                        f"📋 Type: {order_type_display}\n"
+                        f"💰 Limit Price: {limit_price}\n"
+                        f"📦 Qty: {quantity}\n"
+                        f"📉 SL: {sl_price}\n"
+                        f"🎯 Target: {tgt_price}\n"
+                        f"🆔 Order No: {order_id}\n\n"
+                        f"⏳ Waiting for order to fill...\n"
+                        f"📊 Current LTP: {last_price}"
+                    )
                 
-                order_type_display = "Market Order" if order_type == "MKT" else f"Limit Order @ ₹{limit_price}"
-                
-                confirmation_msg = (
-                    f"✅ Order Placed Successfully!\n\n"
-                    f"📌 Symbol: {symbol}\n"
-                    f"📋 Type: {order_type_display}\n"
-                    f"💰 Entry: {entry_price}\n"
-                    f"📦 Qty: {quantity}\n"
-                    f"📉 SL: {sl_price}\n"
-                    f"🎯 Target: {tgt_price}\n"
-                    f"🆔 Order No: {order_id}\n\n"
-                    f"{pnl_info}"
-                )
                 return order_resp, confirmation_msg
             else:
                 # Enhanced error handling with specific error messages
@@ -351,3 +371,61 @@ class TradingEngine:
             return True, f"✅ Trade manually exited at {current_price}"
         except Exception as e:
             return False, f"❌ Failed to exit trade: {e}"
+    
+    async def handle_order_fill(self, order_id, fill_price, context):
+        """Handle order fill notification from websocket."""
+        if order_id not in self.active_trades:
+            return
+        
+        trade = self.active_trades[order_id]
+        
+        # Update order status
+        trade["order_status"] = "COMPLETE"
+        trade["entry_price"] = fill_price  # Update with actual fill price
+        
+        # Log the trade entry with actual fill price
+        row_index = self.trade_logger.log_trade_entry(trade["symbol"], fill_price, trade["entry_time"])
+        if row_index is not None:
+            trade["log_row"] = row_index
+        
+        # Calculate PnL information with actual fill price
+        pnl_info = format_pnl_message(fill_price, trade["sl"], trade["tgt"], trade["qty"])
+        
+        # Send fill notification
+        fill_msg = (
+            f"✅ Order Filled Successfully!\n\n"
+            f"📌 Symbol: {trade['symbol']}\n"
+            f"📋 Type: {trade['order_type']}\n"
+            f"💰 Fill Price: {fill_price}\n"
+            f"📦 Qty: {trade['qty']}\n"
+            f"📉 SL: {trade['sl']}\n"
+            f"🎯 Target: {trade['tgt']}\n"
+            f"🆔 Order No: {order_id}\n\n"
+            f"{pnl_info}"
+        )
+        
+        await context.bot.send_message(chat_id=context._chat_id, text=fill_msg)
+    
+    async def handle_order_rejection(self, order_id, reason, context):
+        """Handle order rejection notification."""
+        if order_id not in self.active_trades:
+            return
+        
+        trade = self.active_trades[order_id]
+        
+        # Update order status
+        trade["order_status"] = "REJECTED"
+        
+        # Send rejection notification
+        rejection_msg = (
+            f"❌ Order Rejected!\n\n"
+            f"📌 Symbol: {trade['symbol']}\n"
+            f"🆔 Order No: {order_id}\n"
+            f"📋 Reason: {reason}\n\n"
+            f"Please try again with different parameters."
+        )
+        
+        await context.bot.send_message(chat_id=context._chat_id, text=rejection_msg)
+        
+        # Remove from active trades
+        del self.active_trades[order_id]
