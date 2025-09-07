@@ -1,6 +1,89 @@
-# Docker
-# Don’t ignore these, they’re essential
-#!Dockerfile
-#!.dockerignore
-#!docker-compose.yml
-#!docker-compose.override.yml
+# --------------------
+# Git
+# --------------------
+.git
+.gitignore
+
+# --------------------
+# Python
+# --------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+
+# --------------------
+# IDEs and Editors
+# --------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --------------------
+# OS generated
+# --------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# --------------------
+# Project specific
+# --------------------
+*.csv
+*.log
+logs/
+temp/
+tmp/
+trade_log.csv
+
+# --------------------
+# Docker (keep Dockerfile & compose for builds)
+# --------------------
+# DO NOT ignore Dockerfile or docker-compose.yml
+# so they are available for docker build
+# (removed from original ignore list)
+
+# --------------------
+# Documentation
+# --------------------
+*.bak
+*.backup
+
+# Ignore markdown docs except DOCKER_README.md
+*.md
+!DOCKER_README.md
+
+# --------------------
+# Scripts (local only)
+# --------------------
+*.bat
+*.sh
+
+# --------------------
+# Tests
+# --------------------
+test_*
+*_test.py
+tests/
