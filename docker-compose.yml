@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  trading-bot:
+    build: .
+    container_name: order-executor-bot
+    restart: unless-stopped
+    
+    # Environment variables (override in .env file)
+    environment:
+      - TZ=Asia/Kolkata
+      - PYTHONUNBUFFERED=1
+    
+    # Volume mounts for persistent data
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./trade_log.csv:/app/trade_log.csv
+      - ./logs:/app/logs
+    
+    # Network configuration
+    networks:
+      - trading-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  trading-network:
+    driver: bridge
+
+# Optional: Add a volume for persistent data
+volumes:
+  trade_data:
+    driver: local
