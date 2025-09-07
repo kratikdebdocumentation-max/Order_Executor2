@@ -84,6 +84,9 @@ class TelegramBot:
             context.user_data["selected_exch"] = exch
             context.user_data["selected_token"] = token
             
+            # Subscribe to symbol for real-time data
+            self.api_client.subscribe_symbol(exch, token)
+            
             # Show order type selection
             keyboard = [
                 ["📈 Market Order", "🎯 Limit Order"],
@@ -362,10 +365,37 @@ class TelegramBot:
             return self.config.READY
             
         elif order_type == "🎯 Limit Order":
-            # Ask for limit price
+            # Get current LTP for the selected symbol
+            symbol = context.user_data.get("selected_symbol")
+            exch = context.user_data.get("selected_exch")
+            token = context.user_data.get("selected_token")
+            
+            if not all([symbol, exch, token]):
+                await update.message.reply_text("❌ Symbol information not found. Please try again.")
+                return
+            
+            # Subscribe to symbol for real-time updates
+            self.api_client.subscribe_symbol(exch, token)
+            
+            # Get current quote
+            quote = self.api_client.get_quote(exch, token)
+            current_ltp = "N/A"
+            
+            if quote and "lp" in quote:
+                current_ltp = f"₹{quote['lp']}"
+            else:
+                # Try to get quote again with a small delay
+                import asyncio
+                await asyncio.sleep(0.5)
+                quote = self.api_client.get_quote(exch, token)
+                if quote and "lp" in quote:
+                    current_ltp = f"₹{quote['lp']}"
+            
+            # Ask for limit price with current LTP
             await update.message.reply_text(
-                f"🎯 Enter limit price for {context.user_data.get('selected_symbol', 'symbol')}:\n\n"
-                f"💡 Current LTP will be shown for reference"
+                f"🎯 Enter limit price for {symbol}:\n\n"
+                f"📊 Current LTP: {current_ltp}\n"
+                f"💡 Enter your desired limit price (e.g., {current_ltp.replace('₹', '')})"
             )
             return self.config.LIMIT_PRICE_INPUT
             
