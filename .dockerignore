@@ -1,16 +1,20 @@
+# --------------------
 # Git
+# --------------------
 .git
 .gitignore
 
+# --------------------
 # Python
-__pycache__
+# --------------------
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-env
-venv
-.venv
+env/
+venv/
+.venv/
 pip-log.txt
 pip-delete-this-directory.txt
 .tox
@@ -20,20 +24,22 @@ pip-delete-this-directory.txt
 nosetests.xml
 coverage.xml
 *.cover
-*.log
-.git
-.mypy_cache
-.pytest_cache
-.hypothesis
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 
-# IDE
-.vscode
-.idea
+# --------------------
+# IDEs and Editors
+# --------------------
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
 
-# OS
+# --------------------
+# OS generated
+# --------------------
 .DS_Store
 .DS_Store?
 ._*
@@ -42,33 +48,42 @@ coverage.xml
 ehthumbs.db
 Thumbs.db
 
+# --------------------
 # Project specific
+# --------------------
 *.csv
 *.log
 logs/
 temp/
 tmp/
+trade_log.csv
 
-# Docker
-Dockerfile
-.dockerignore
-docker-compose.yml
-docker-compose.override.yml
+# --------------------
+# Docker (keep Dockerfile & compose for builds)
+# --------------------
+# DO NOT ignore Dockerfile or docker-compose.yml
+# so they are available for docker build
+# (removed from original ignore list)
 
+# --------------------
 # Documentation
-README.md
-*.md
+# --------------------
+*.bak
+*.backup
 
-# Scripts
+# Ignore markdown docs except DOCKER_README.md
+*.md
+!DOCKER_README.md
+
+# --------------------
+# Scripts (local only)
+# --------------------
 *.bat
 *.sh
 
-# Test files
+# --------------------
+# Tests
+# --------------------
 test_*
 *_test.py
 tests/
-
-# Backup files
-*.bak
-*.backup
-*~
