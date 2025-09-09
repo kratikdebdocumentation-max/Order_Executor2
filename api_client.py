@@ -108,3 +108,25 @@ class APIClient:
         except Exception as e:
             print(f"❌ Error unsubscribing from symbol: {e}")
             return False
+    
+    def cancel_order(self, order_id):
+        """Cancel an order."""
+        try:
+            cancel_resp = self.api.cancel_order(order_id)
+            return cancel_resp
+        except Exception as e:
+            print(f"❌ Error canceling order: {e}")
+            return None
+    
+    def modify_order(self, order_id, new_price, new_quantity):
+        """Modify an order."""
+        try:
+            modify_resp = self.api.modify_order(
+                order_id=order_id,
+                new_price=new_price,
+                new_quantity=new_quantity
+            )
+            return modify_resp
+        except Exception as e:
+            print(f"❌ Error modifying order: {e}")
+            return None

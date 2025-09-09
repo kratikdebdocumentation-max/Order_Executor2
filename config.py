@@ -5,6 +5,7 @@ Handles loading and managing configuration settings.
 
 import json
 import os
+from datetime import datetime
 from typing import Dict, Any
 
 
@@ -31,6 +32,7 @@ class Config:
         self.MODIFY_OPTIONS = "MODIFY_OPTIONS"
         self.MODIFY_SL = "MODIFY_SL"
         self.MODIFY_TARGET = "MODIFY_TARGET"
+        self.MODIFY_ENTRY_PRICE = "MODIFY_ENTRY_PRICE"
         
         # Order status constants
         self.ORDER_PENDING = "PENDING"
@@ -77,6 +79,10 @@ class Config:
         # Active trades and LTP tracking
         self.active_trades = {}
         self.last_ltp = {}
+        
+        # User preferences file
+        self.preferences_file = "user_preferences.json"
+        self.user_preferences = self.load_user_preferences()
     
     def load_credentials(self):
         """Load credentials from credentials.json file."""
@@ -115,6 +121,7 @@ class Config:
             # Load Telegram bot credentials
             self.TELEGRAM_BOT_TOKEN = creds.get("telegram_bot_token")
             self.TELEGRAM_CHAT_ID = creds.get("telegram_chat_id")
+            self.TELEGRAM_CHANNEL_ID = creds.get("telegram_chat_id")  # Use same ID for channel
             
             # Load trading configuration
             self.DEFAULT_PRODUCT_TYPE = creds.get("default_product_type", "I")
@@ -163,9 +170,93 @@ class Config:
         """Get Telegram chat ID."""
         return self.TELEGRAM_CHAT_ID
     
+    @property
+    def CHANNEL_ID(self):
+        """Get Telegram channel ID."""
+        return self.TELEGRAM_CHANNEL_ID
+    
     def update_product_type(self, product_type: str):
         """Update the default product type (MIS or CNC)."""
         if product_type.upper() in ["MIS", "CNC"]:
             self.DEFAULT_PRODUCT_TYPE = product_type.upper()
         else:
             raise ValueError("Product type must be 'MIS' or 'CNC'")
+    
+    def load_user_preferences(self):
+        """Load user preferences from JSON file."""
+        try:
+            if not os.path.exists(self.preferences_file):
+                return {
+                    "capital": None,
+                    "sl_percent": None,
+                    "target_percent": None,
+                    "last_updated": None
+                }
+            
+            with open(self.preferences_file, 'r') as f:
+                preferences = json.load(f)
+            
+            # Ensure all required keys exist
+            default_prefs = {
+                "capital": None,
+                "sl_percent": None,
+                "target_percent": None,
+                "last_updated": None
+            }
+            
+            for key in default_prefs:
+                if key not in preferences:
+                    preferences[key] = default_prefs[key]
+            
+            return preferences
+            
+        except Exception as e:
+            print(f"❌ Error loading user preferences: {e}")
+            return {
+                "capital": None,
+                "sl_percent": None,
+                "target_percent": None,
+                "last_updated": None
+            }
+    
+    def save_user_preferences(self, capital=None, sl_percent=None, target_percent=None):
+        """Save user preferences to JSON file."""
+        try:
+            # Update preferences
+            if capital is not None:
+                self.user_preferences["capital"] = capital
+            if sl_percent is not None:
+                self.user_preferences["sl_percent"] = sl_percent
+            if target_percent is not None:
+                self.user_preferences["target_percent"] = target_percent
+            
+            self.user_preferences["last_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Save to file
+            with open(self.preferences_file, 'w') as f:
+                json.dump(self.user_preferences, f, indent=2)
+            
+            print(f"💾 Saved user preferences: Capital={capital}, SL={sl_percent}%, Target={target_percent}%")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error saving user preferences: {e}")
+            return False
+    
+    def has_complete_preferences(self):
+        """Check if user has complete trading preferences."""
+        return (self.user_preferences.get("capital") is not None and
+                self.user_preferences.get("sl_percent") is not None and
+                self.user_preferences.get("target_percent") is not None)
+    
+    def get_preferences_summary(self):
+        """Get a formatted summary of current preferences."""
+        if not self.has_complete_preferences():
+            return "No saved preferences"
+        
+        capital = self.user_preferences.get("capital", 0)
+        sl = self.user_preferences.get("sl_percent", 0)
+        target = self.user_preferences.get("target_percent", 0)
+        last_updated = self.user_preferences.get("last_updated", "Unknown")
+        
+        return f"💰 Capital: ₹{capital:,.0f}\n📉 SL: {sl}%\n🎯 Target: {target}%\n⏰ Last Updated: {last_updated}"

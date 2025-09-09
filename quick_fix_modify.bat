@@ -1,0 +1,9 @@
+@echo off
+echo Applying quick fix for modify options issue...
+echo Stopping bot...
+taskkill /f /im python.exe 2>nul
+timeout /t 2 /nobreak >nul
+echo Starting bot with fixes...
+python main.py
+pause
+
